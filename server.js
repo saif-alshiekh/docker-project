@@ -1,21 +1,38 @@
 const express = require('express');
 const mysql = require('mysql');
+let connected = false;
 const app = express();
 const PORT = 3000;
 
-// MySQL connection
-const db = mysql.createConnection({
-    host: process.env.DB_HOST,
-    user: process.env.DB_USER,
-    password: process.env.DB_PASS,
-    database: process.env.DB_NAME
-});
+const dbConfig = {
+    host: 'db',
+    user: 'admin',
+    password: 'admin',
+    database: 'userDB'
+};
 
-// Connect to database
-db.connect((err) => {
-    if (err) { throw err; }
-    console.log('Connected to database');
-});
+function connectDatabase() {
+    const db = mysql.createConnection(dbConfig);
+    db.connect(err => {
+        if (err) {
+            console.error('Error connecting: ' + err.stack);
+            setTimeout(connectDatabase, 5000); // Retry after 5 seconds
+        } else {
+            connected = true;
+            console.log('Connected to database.');
+        }
+    });
+
+    db.on('error', err => {
+        console.error('Database error', err);
+        if (err.code === 'PROTOCOL_CONNECTION_LOST') {
+            connectDatabase();
+        } else {
+            throw err;
+        }
+    });
+}
+connectDatabase();
 
 app.use(express.static('public'));
 app.use(express.json());
