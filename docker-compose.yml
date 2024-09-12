@@ -1,13 +1,30 @@
 version: '3.8'
 services:
+  db:
+    image: mysql:5.7
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: admin
+      MYSQL_DATABASE: userDB
+      MYSQL_USER: admin
+      MYSQL_PASSWORD: admin
+    ports:
+      - "3307:3306"
+    volumes:
+      - db-data:/var/lib/mysql
+    expose:
+      - 3306
+      - 33060
+
+
   enter-data-app:
+    depends_on:
+      - db
     build: ./1enter-data-app
     ports:
       - "8080:3000"
-    depends_on:
-      - db
     environment:
-      DB_HOST: db
+      DB_HOST: db:3306
       DB_USER: admin
       DB_PASS: admin
       DB_NAME: userDB
@@ -26,15 +43,7 @@ services:
     ports:
       - "27017:27017"
 
-  db:
-    image: mysql:5.7
-    environment:
-      MYSQL_ROOT_PASSWORD: admin
-      MYSQL_DATABASE: userDB
-      MYSQL_USER: admin
-      MYSQL_PASSWORD: admin
-    ports:
-      - "3307:3306"
+  
 
 volumes:
   db-data:
