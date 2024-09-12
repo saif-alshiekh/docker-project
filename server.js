@@ -1,12 +1,47 @@
 const express = require('express');
 const path = require('path');
+const mysql = require('mysql');
 const app = express();
 const PORT = process.env.PORT || 3000;
-const mysql = require('mysql');
-let connected = false;
 
 // Declare db globally
 let db;
+
+// Database configuration
+const dbConfig = {
+    host: 'db',
+    user: 'admin',
+    password: 'admin',
+    database: 'userDB'
+};
+
+function connectDatabase() {
+    db = mysql.createConnection(dbConfig);
+    db.connect(err => {
+        if (err) {
+            console.error('Error connecting: ' + err.stack);
+            setTimeout(connectDatabase, 5000); // Retry after 5 seconds
+        } else {
+            console.log('Connected to database.');
+            startServer();  // Start server after connection is established
+        }
+    });
+
+    db.on('error', err => {
+        console.error('Database error', err);
+        if (err.code === 'PROTOCOL_CONNECTION_LOST') {
+            connectDatabase(); // Reconnect on connection loss
+        } else {
+            throw err;
+        }
+    });
+}
+
+function startServer() {
+    app.listen(PORT, '0.0.0.0', () => {
+        console.log(`Server running on http://localhost:${PORT}`);
+    });
+}
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -41,38 +76,5 @@ app.post('/login', (req, res) => {
     });
 });
 
-app.listen(PORT, '0.0.0.0', () => {
-    console.log(`Server running on http://localhost:${PORT}`);
-});
-
-const dbConfig = {
-    host: 'db',
-    user: 'admin',
-    password: 'admin',
-    database: 'userDB'
-};
-
-function connectDatabase() {
-    db = mysql.createConnection(dbConfig);
-    db.connect(err => {
-        if (err) {
-            console.error('Error connecting: ' + err.stack);
-            setTimeout(connectDatabase, 5000); // Retry after 5 seconds
-        } else {
-            connected = true;
-            console.log('Connected to database.');
-        }
-    });
-
-    db.on('error', err => {
-        console.error('Database error', err);
-        if (err.code === 'PROTOCOL_CONNECTION_LOST') {
-            connectDatabase();
-        } else {
-            throw err;
-        }
-    });
-}
+// Connect to the database and start the server
 connectDatabase();
-
-console.log(`Database Host: ${process.env.DB_HOST}`);
