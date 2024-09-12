@@ -1,7 +1,7 @@
 version: '3.8'
 services:
-  web-app1:
-    build: .
+  enter-data-app:
+    build: ./1enter-data-app
     ports:
       - "8080:3000"
     depends_on:
@@ -12,12 +12,14 @@ services:
       DB_PASS: admin
       DB_NAME: userDB
 
-  web-app2:
-    build: .
+  show-results-app:
+    build: ./2show-results-app
     ports:
       - "3001:3000"
     depends_on:
       - mongo
+    environment:
+      MONGO_URI: "mongodb://mongo:27017"
 
   mongo:
     image: mongo
