@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Show Results</title>
+</head>
+<body>
+    <h1>Results</h1>
+    <div id="results"></div>
+
+    <script>
+        async function fetchResults() {
+            const response = await fetch('/api/results');
+            const results = await response.json();
+            const resultsContainer = document.getElementById('results');
+            resultsContainer.innerHTML = results.map(result => `<p>${result.username}: ${result.score}</p>`).join('');
+        }
+
+        fetchResults();
+    </script>
+</body>
+</html>
