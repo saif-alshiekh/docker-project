@@ -1,0 +1,4 @@
+FROM mysql:5.7
+
+RUN mysql -e "CREATE DATABASE userDB"
+RUN mysql -e "USE userDB; CREATE TABLE IF NOT EXISTS users (username VARCHAR(255) PRIMARY KEY, password VARCHAR(255) NOT NULL, age INT, location VARCHAR(255), sex VARCHAR(20));"
